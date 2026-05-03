@@ -20,11 +20,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title('📱 伝送換算アシスト (990-FD0版)')
+st.title('📱 伝送換算アシスト (990h-FD0h版)')
 
 # --- 1. 基本情報設定 ---
-with st.expander("⚙️ 基本情報設定 (990-FD0基準)", expanded=False):
-    st.info("計器の上下限値を設定してください。伝送値は990-4048(FD0)固定です。")
+with st.expander("⚙️ 基本情報設定 (HEX基準)", expanded=False):
+    st.info("計器の上下限値を設定してください。伝送範囲は 990h(0%) 〜 FD0h(100%) です。")
     col1, col2 = st.columns(2)
     with col1:
         s_min = st.number_input("スケール下限 (0%)", value=0.00)
@@ -35,9 +35,9 @@ with st.expander("⚙️ 基本情報設定 (990-FD0基準)", expanded=False):
         a_max = st.number_input("電流上限 (mA)", value=20.00)
         v_max = st.number_input("電圧上限 (V)", value=5.000)
     
-    # 基準となる伝送値の設定
-    t_min = 990.0   # 10進数の990 (HEX: 3DE)
-    t_max = 4048.0  # 10進数の4048 (HEX: FD0)
+    # 伝送値幅の確定 (16進数を10進数に変換)
+    t_min = float(int("990", 16))  # 2448
+    t_max = float(int("FD0", 16))  # 4048
 
 st.markdown("---")
 
@@ -53,28 +53,14 @@ error_msg = ""
 
 st.markdown('<div class="main-input">', unsafe_allow_html=True)
 if mode == "伝送値(HEX)":
-    # 16進数を文字列として入力。初期値を 990 の HEX である "3DE" ではなく、
-    # 直感的に「990(10進数)」を入力しても動作するように調整可能です。
-    # ここでは「入力された文字が数字のみなら10進数、A-Fを含めば16進数」として判定します。
-    raw_input = st.text_input("現在の伝送値(HEX)を入力", value="3DE")
+    # 完全に16進数として扱う入力枠
+    hex_input = st.text_input("現在の伝送値(HEX)を入力", value="990")
     try:
-        # A-Fが含まれているか、または明示的に16進数として扱う
-        if any(c in raw_input.upper() for c in "ABCDEF"):
-            val_dec = int(raw_input, 16)
-        else:
-            # 数字のみの場合は10進数として解釈（ユーザーが990と打った場合を考慮）
-            # ただし、990(HEX)を入力したい場合もあるため、基本は16進数解釈を優先
-            try:
-                # ユーザーが「990」と打った時、それが10進数の990だと思って打っているなら
-                # このツールでは10進数として処理するのが現場では使いやすいはずです。
-                val_dec = float(raw_input)
-            except:
-                val_dec = int(raw_input, 16)
-        
+        val_dec = int(hex_input, 16)
         percent = (float(val_dec) - t_min) / (t_max - t_min)
-        st.caption(f"内部10進数換算: {val_dec:.0f} bit")
+        st.caption(f"10進数換算: {val_dec} bit")
     except ValueError:
-        error_msg = "正しい数値を入力してください。"
+        error_msg = "正しい16進数（0-9, A-F）を入力してください。"
 elif mode == "指示値":
     val = st.number_input("現在の指示値を入力", value=0.000)
     percent = (val - s_min) / (s_max - s_min)
@@ -98,21 +84,26 @@ res_scale = s_min + (s_max - s_min) * percent
 res_ma = a_min + (a_max - a_min) * percent
 res_v = v_min + (v_max - v_min) * percent
 
-# 伝送値の表示（10進数と16進数の両方）
-display_bit_dec = int(res_bit)
-display_bit_hex = hex(display_bit_dec).split('x')[-1].upper()
+# 表示用HEX変換（負の値や整数化に対応）
+display_bit_dec = int(round(res_bit))
+display_bit_hex = hex(display_bit_dec).replace('0x', '').upper()
 
 # --- 4. 表示エリア ---
 st.subheader("📊 換算結果")
 col_res1, col_res2 = st.columns(2)
 with col_res1:
-    st.metric("伝送値(10進)", f"{display_bit_dec} bit")
-with col_res2:
     st.metric("伝送値(HEX)", f"{display_bit_hex}")
+with col_res2:
+    st.metric("伝送値(10進)", f"{display_bit_dec}")
 
 st.metric("スケール換算値", f"{res_scale:,.3f}")
 st.metric("電流値", f"{res_ma:,.2f} mA")
 st.metric("電圧値", f"{res_v:,.3f} V")
 
 st.markdown("---")
-st.caption(f"現在の計算ベース: {percent*100:.2f} % (0%基準: 990 / 100%基準: 4048)")
+# 確認用ガイド
+st.table({
+    "チェックポイント": ["0%", "25%", "50%", "75%", "100%"],
+    "HEX値": ["990", "B20", "CB0", "E40", "FD0"],
+    "10進値": ["2448", "2848", "3248", "3648", "4048"]
+})
