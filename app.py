@@ -53,15 +53,28 @@ error_msg = ""
 
 st.markdown('<div class="main-input">', unsafe_allow_html=True)
 if mode == "伝送値(HEX)":
-    # 16進数を文字列として入力。初期値を 990 の HEX である "3DE" に設定。
-    hex_input = st.text_input("現在の伝送値(HEX)を入力", value="3DE")
+    # 16進数を文字列として入力。初期値を 990 の HEX である "3DE" ではなく、
+    # 直感的に「990(10進数)」を入力しても動作するように調整可能です。
+    # ここでは「入力された文字が数字のみなら10進数、A-Fを含めば16進数」として判定します。
+    raw_input = st.text_input("現在の伝送値(HEX)を入力", value="3DE")
     try:
-        # 入力された16進数を10進数に変換して計算
-        val_dec = int(hex_input, 16)
+        # A-Fが含まれているか、または明示的に16進数として扱う
+        if any(c in raw_input.upper() for c in "ABCDEF"):
+            val_dec = int(raw_input, 16)
+        else:
+            # 数字のみの場合は10進数として解釈（ユーザーが990と打った場合を考慮）
+            # ただし、990(HEX)を入力したい場合もあるため、基本は16進数解釈を優先
+            try:
+                # ユーザーが「990」と打った時、それが10進数の990だと思って打っているなら
+                # このツールでは10進数として処理するのが現場では使いやすいはずです。
+                val_dec = float(raw_input)
+            except:
+                val_dec = int(raw_input, 16)
+        
         percent = (float(val_dec) - t_min) / (t_max - t_min)
-        st.caption(f"内部換算: {val_dec} bit")
+        st.caption(f"内部10進数換算: {val_dec:.0f} bit")
     except ValueError:
-        error_msg = "正しい16進数（0-9, A-F）を入力してください。"
+        error_msg = "正しい数値を入力してください。"
 elif mode == "指示値":
     val = st.number_input("現在の指示値を入力", value=0.000)
     percent = (val - s_min) / (s_max - s_min)
@@ -102,4 +115,4 @@ st.metric("電流値", f"{res_ma:,.2f} mA")
 st.metric("電圧値", f"{res_v:,.3f} V")
 
 st.markdown("---")
-st.caption(f"現在の計算ベース: {percent*100:.2f} % (0%基準: 3DE / 100%基準: FD0)")
+st.caption(f"現在の計算ベース: {percent*100:.2f} % (0%基準: 990 / 100%基準: 4048)")
