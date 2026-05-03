@@ -22,18 +22,30 @@ st.markdown("""
 
 st.title('📱 伝送換算アシスト (990h-FD0h版)')
 
-# --- 1. 基本情報設定 ---
+# --- 1. 基本情報設定（並び順を変更） ---
 with st.expander("⚙️ 基本情報設定 (HEX基準)", expanded=False):
-    st.info("計器の上下限値を設定してください。伝送範囲は 990h(0%) 〜 FD0h(100%) です。")
+    st.info("計器の上下限値を設定してください。伝送範囲は 990h(0%) 〜 FD0h(100%) 固定です。")
+    
+    # 1段目：スケール
     col1, col2 = st.columns(2)
     with col1:
         s_min = st.number_input("スケール下限 (0%)", value=0.00)
-        a_min = st.number_input("電流下限 (mA)", value=4.00)
-        v_min = st.number_input("電圧下限 (V)", value=1.000)
     with col2:
         s_max = st.number_input("スケール上限 (100%)", value=100.00)
-        a_max = st.number_input("電流上限 (mA)", value=20.00)
-        v_max = st.number_input("電圧上限 (V)", value=5.000)
+    
+    # 2段目：電圧
+    col3, col4 = st.columns(2)
+    with col3:
+        v_min = st.number_input("電圧下限 (V)", value=1.000, format="%.3f")
+    with col4:
+        v_max = st.number_input("電圧上限 (V)", value=5.000, format="%.3f")
+
+    # 3段目：電流
+    col5, col6 = st.columns(2)
+    with col5:
+        a_min = st.number_input("電流下限 (mA)", value=4.00, format="%.2f")
+    with col6:
+        a_max = st.number_input("電流上限 (mA)", value=20.00, format="%.2f")
     
     # 伝送値幅の確定 (16進数を10進数に変換)
     t_min = float(int("990", 16))  # 2448
@@ -53,7 +65,6 @@ error_msg = ""
 
 st.markdown('<div class="main-input">', unsafe_allow_html=True)
 if mode == "伝送値(HEX)":
-    # 完全に16進数として扱う入力枠
     hex_input = st.text_input("現在の伝送値(HEX)を入力", value="990")
     try:
         val_dec = int(hex_input, 16)
@@ -84,7 +95,7 @@ res_scale = s_min + (s_max - s_min) * percent
 res_ma = a_min + (a_max - a_min) * percent
 res_v = v_min + (v_max - v_min) * percent
 
-# 表示用HEX変換（負の値や整数化に対応）
+# 表示用HEX変換（丸め処理含む）
 display_bit_dec = int(round(res_bit))
 display_bit_hex = hex(display_bit_dec).replace('0x', '').upper()
 
