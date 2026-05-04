@@ -8,7 +8,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title('📱 伝送換算アシスト(990h-FD0h) (入力抵抗選択版)')
+st.title('📱 伝送換算アシスト(990h-FD0h)')
 
 # --- 1. 基本情報設定 ---
 with st.expander("⚙️ 基本情報設定", expanded=True):
