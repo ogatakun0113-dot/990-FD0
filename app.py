@@ -1,7 +1,7 @@
 import streamlit as st
 
 # --- ページ設定 ---
-st.set_page_config(page_title="伝送換算アシスト (990h-FD0h)", layout="centered")
+st.set_page_config(page_title="伝送換算 (990h-FD0h)", layout="centered")
 
 # --- 見た目の設定 ---
 st.markdown("""
@@ -27,7 +27,7 @@ st.markdown("""
 # 右上にクレジットを表示
 st.markdown('<p class="credit">開発/制作：緒方</p>', unsafe_allow_html=True)
 
-st.title('📱 伝送換算アシスト (990h-FD0h)')
+st.title('📱 伝送換算 (990h-FD0h)')
 
 # --- 1. 基本情報設定 ---
 with st.expander("⚙️ 基本情報設定 (990h-FD0h基準)", expanded=True):
