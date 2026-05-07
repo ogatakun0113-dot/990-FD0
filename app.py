@@ -46,10 +46,11 @@ try:
         val = st.number_input("％値", value=0.0)
         percent = val / 100.0
     elif mode == "電流(mA)":
-        val = st.number_input("電流値", value=a_min)
+        val = st.number_input("電流値", value=a_min, format="%.2f")
         percent = (val - a_min) / (a_max - a_min) if (a_max - a_min) != 0 else 0
     elif mode == "電圧(V)":
-        val = st.number_input("電圧値", value=v_min)
+        # 電圧入力を小数点3桁に変更
+        val = st.number_input("電圧値", value=v_min, format="%.3f")
         percent = (val - v_min) / (v_max - v_min) if (v_max - v_min) != 0 else 0
 except:
     st.error("有効な値を入力してください")
@@ -57,13 +58,13 @@ except:
 res_scale = s_min + (s_max - s_min) * percent
 res_ma = a_min + (a_max - a_min) * percent
 res_v = v_min + (v_max - v_min) * percent
-res_hex = hex(int(round(t_min + (t_max - t_min) * percent))).replace('0x','').upper()
+res_hex = hex(int(round(t_min + (t_max - t_min) * percent))).replace('0x', '').upper()
 
 st.markdown('<div class="result-box">', unsafe_allow_html=True)
 st.subheader("📊 換算結果")
 c1, c2, c3 = st.columns(3)
 c1.metric("指示値", f"{res_scale:.2f}")
 c2.metric("電流", f"{res_ma:.2f} mA")
-c3.metric("電圧", f"{res_v:.3f} V")
+c3.metric("電圧", f"{res_v:.3f} V") # 結果も3桁
 st.metric("伝送値 (HEX)", f"{res_hex} h")
 st.markdown('</div>', unsafe_allow_html=True)
