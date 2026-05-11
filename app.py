@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="伝送換算 (990-FD0)", layout="centered")
+st.set_page_config(page_title="伝送値換算 (990-FD0)", layout="centered")
 
 st.markdown("""
 <style>
@@ -11,7 +11,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<p class="credit">開発/制作：緒方</p>', unsafe_allow_html=True)
-st.title('📱 伝送換算 (990-FD0)(HEX)')
+st.title('📱 伝送値換算 (990-FD0)(HEX)')
 
 with st.expander("⚙️ 基本情報設定 (990h-FD0h基準)", expanded=True):
     col1, col2 = st.columns(2)
